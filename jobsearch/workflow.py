@@ -9,6 +9,7 @@ from rich.console import Console
 from .agents import (
     build_preference_agent,
     build_search_agent,
+    build_research_agent,
     build_planner_agent,
 )
 
@@ -27,10 +28,11 @@ def run_workflow() -> None:
 
     workforce.add_single_agent_worker("mentor", build_preference_agent())
     workforce.add_single_agent_worker("recruiter", build_search_agent())
+    workforce.add_single_agent_worker("researcher", build_research_agent())
     workforce.add_single_agent_worker("coach", build_planner_agent())
 
     initial_task = Task(
-        content="Collect candidate preferences, search LinkUp and craft a 14-day plan",
+        content="Collect candidate preferences, search for jobs, look for resources, and craft a 14-day interview plan",
         id="0",
     )
 

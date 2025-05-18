@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from linkup import LinkupClient
 from typing import Any, Dict
-from camel.toolkits import FunctionTool
+from camel.toolkits import FunctionTool, SearchToolkit
 from .config import LINKUP_API_KEY
 
 client = LinkupClient(api_key=LINKUP_API_KEY)
@@ -24,9 +24,10 @@ def search_linkup(
 
     return client.search(
         query=query,
-        depth="deep",
+        depth="standard",
         output_type="sourcedAnswer"
     )
 
 
 search_linkup_tool = FunctionTool(search_linkup)
+web_search_tool = FunctionTool(SearchToolkit().search_duckduckgo)

@@ -9,6 +9,7 @@ from camel.types import ModelPlatformType, ModelType
 
 from .config import settings
 from .tools import search_linkup_tool
+from .tools import web_search_tool
 from .human import human_preference_tool
 
 # ---------------------------------------------------------------------------
@@ -33,31 +34,82 @@ _MODEL = _create_model()
 # ---------------------------------------------------------------------------
 
 
+# ----------  Mentor  ----------
 def build_preference_agent() -> ChatAgent:
     return ChatAgent(
         system_message=(
-            "You are a career mentor. Call the 'collect_candidate_preferences' "
-            "tool when you need answers; do NOT invent preferences."),
+            "ROLE: Senior Career Mentor.\n"
+            "GOAL: Capture *accurate* job-search preferences from the human.\n"
+            "TOOL RULES:\n"
+            " • ALWAYS call `human_preference_tool` for each question.\n"
+            " • NEVER invent answers.\n"
+            "OUTPUT:\n"
+            "Return a single JSON with keys: "
+            "`desired_titles[]`, `location`, `remote_ok`, `salary_min_usd`, "
+            "`tech_stack[]`, `notes`."
+        ),
         model=_MODEL,
-        tools=[human_preference_tool]
+        tools=[human_preference_tool],
     )
 
 
+# ----------  Recruiter  ----------
 def build_search_agent() -> ChatAgent:
     return ChatAgent(
         system_message=(
-            "You are a recruiter. Use `search_linkup` to fetch jobs that match "
-            "the candidate profile you receive."),
+            "ROLE: Technical Recruiter.\n"
+            "INPUT: the preference-JSON from Mentor.\n"
+            "ACTION STEPS:\n"
+            " 1. Build a boolean search string (AND/OR, quotes).\n"
+            " 2. Call `search_linkup_tool` with `query`, `location`, `remote`.\n"
+            " 3. Rank results by salary DESC, then recency.\n"
+            "OUTPUT (JSON List):\n"
+            "[{title, company, salary_usd, url, why_match}]  • Max 10 items."
+        ),
         model=_MODEL,
-        tools=[search_linkup_tool]
+        tools=[search_linkup_tool],
     )
 
 
+# ----------  Researcher  ----------
+def build_research_agent() -> ChatAgent:
+    return ChatAgent(
+        system_message=(
+            "ROLE: Resource Researcher.\n"
+            "INPUT: recruiter JSON list.\n"
+            "For EACH job:\n"
+            " • Run up to 3 `web_search_tool` queries "
+            "(company interview tips, role-specific questions, system design).\n"
+            " • Choose top 3 relevant links.\n"
+            "OUTPUT (JSON dict):\n"
+            "{job_url: [{title, url, note}] }"
+        ),
+        model=_MODEL,
+        tools=[web_search_tool],
+    )
+
+
+# ----------  Coach  ----------
 def build_planner_agent() -> ChatAgent:
     return ChatAgent(
         system_message=(
-            "You are a senior interview coach. Craft a 14-day study plan "
-            "for each supplied job posting."),
+            "ROLE: Senior Interview Coach.\n"
+            "INPUTS:\n"
+            " • preference-JSON\n"
+            " • job_list JSON\n"
+            " • resources JSON\n"
+            "Generate a 14-day plan:\n"
+            " - Mix coding drills (LeetCode style), system-design sessions, "
+            "   behavioral prep, and company research.\n"
+            " - Reference specific resources by title.\n"
+            "OUTPUT:\n"
+            "```markdown\n"
+            "# Day 1-14 Schedule\n"
+            "| Day | Focus | Resource |\n"
+            "|-----|-------|----------|\n"
+            "...\n"
+            "```"
+        ),
         model=_MODEL,
-        tools=[]      # pure reasoning
+        tools=[],
     )
