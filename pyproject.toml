@@ -15,6 +15,8 @@ pydantic-settings = "^2.9.1"
 linkup-sdk = "^0.2.5"
 camel-ai = {extras = ["all"], version = "^0.2.59"}
 humanlayer = "^0.7.7"
+flask = "^3.1.1"
+markdown = "^3.8"
 
 [tool.poetry.scripts]
 app = "jobsearch.run_agents:main"

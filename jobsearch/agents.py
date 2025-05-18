@@ -39,8 +39,8 @@ def build_preference_agent() -> ChatAgent:
     return ChatAgent(
         system_message=(
             """Gather candidate preferences from the candidate
-            by calling the 'contact_human' tool. Do NOT invent preferences. Stop when you have information about 
-            candidate's preferences regarding role, location and remote work preference."""),
+            by calling the 'contact_human' tool. Do NOT invent preferences. Stop when you have information about
+            candidate's preferences regarding position level, salary, location and tech stack."""),
         model=_MODEL,
         tools=[human_tool]
     )
@@ -52,9 +52,10 @@ def build_search_agent() -> ChatAgent:
         system_message=(
             "Use `search_linkup_tool` to fetch jobs that match"
             "the candidate profile you receive. Stop when you have information about "
-            "matching jobs."
+            "matching jobs. Make sure to focus on ALL the criteria received from the candidate, "
+            "Not just a single one, like salary. Take into account position level, location, tech stack, and salary."
             "Make sure to look for specific job titles, company names, and job URLs."
-            "OUTPUT: A list of no less than 5 and no more than 10 jobs, with job titles, company names, and job URLs."),
+            "OUTPUT: A list of no less than 3 and no more than 5 jobs, with job titles, company names, and job URLs."),
         model=_MODEL,
         tools=[search_linkup_tool]
     )
@@ -66,8 +67,8 @@ def build_research_agent() -> ChatAgent:
         system_message=(
             "Use `web_search_tool` to fetch information "
             "about interview resources necessary for preparation for interviews in jobs received. "
-            "Stop when you have a at least 5 resources."
-            "OUTPUT: A list of no less than 5 and no more than 10 resources, "
+            "Stop when you have a at least 3 resources."
+            "OUTPUT: A list of no less than 3 and no more than 5 resources, "
             "with resource titles, descriptions, and URLs."),
         model=_MODEL,
         tools=[web_search_tool],

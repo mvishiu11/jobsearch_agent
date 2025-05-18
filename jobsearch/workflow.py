@@ -12,6 +12,7 @@ from .agents import (
     build_research_agent,
     build_planner_agent,
 )
+from .web_agent import WebPresenterAgent
 
 from .agents import _MODEL
 
@@ -46,5 +47,10 @@ def run_workflow() -> None:
 
     result_task = workforce.process_task(initial_task)
 
+    print(result_task)
+
     console.rule("[bold green]Interview Plan")
     console.print(result_task.result)
+
+    web_agent = WebPresenterAgent(summary_data=result_task.result, model=_MODEL)
+    web_agent.run()
