@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     openai_api_key: str  # required
     linkup_api_key: str  # required
+    brave_api_key: str  # required
 
     model_platform: str = Field("openai", env="MODEL_PLATFORM")
     model_type: str = Field("gpt_4o_mini", env="MODEL_TYPE")
@@ -29,3 +30,4 @@ settings = Settings()
 
 OPENAI_API_KEY = settings.openai_api_key
 LINKUP_API_KEY = settings.linkup_api_key
+BRAVE_API_KEY = settings.brave_api_key

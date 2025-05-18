@@ -10,7 +10,7 @@ from camel.types import ModelPlatformType, ModelType
 from .config import settings
 from .tools import search_linkup_tool
 from .tools import web_search_tool
-from .human import human_preference_tool
+from .human import human_tool
 
 # ---------------------------------------------------------------------------
 # Low‑level model factory (shared by all agents)
@@ -38,18 +38,11 @@ _MODEL = _create_model()
 def build_preference_agent() -> ChatAgent:
     return ChatAgent(
         system_message=(
-            "ROLE: Senior Career Mentor.\n"
-            "GOAL: Capture *accurate* job-search preferences from the human.\n"
-            "TOOL RULES:\n"
-            " • ALWAYS call `human_preference_tool` for each question.\n"
-            " • NEVER invent answers.\n"
-            "OUTPUT:\n"
-            "Return a single JSON with keys: "
-            "`desired_titles[]`, `location`, `remote_ok`, `salary_min_usd`, "
-            "`tech_stack[]`, `notes`."
-        ),
+            """Gather candidate preferences from the candidate
+            by calling the 'contact_human' tool. Do NOT invent preferences. Stop when you have information about 
+            candidate's preferences regarding role, location and remote work preference."""),
         model=_MODEL,
-        tools=[human_preference_tool],
+        tools=[human_tool]
     )
 
 
@@ -57,17 +50,13 @@ def build_preference_agent() -> ChatAgent:
 def build_search_agent() -> ChatAgent:
     return ChatAgent(
         system_message=(
-            "ROLE: Technical Recruiter.\n"
-            "INPUT: the preference-JSON from Mentor.\n"
-            "ACTION STEPS:\n"
-            " 1. Build a boolean search string (AND/OR, quotes).\n"
-            " 2. Call `search_linkup_tool` with `query`, `location`, `remote`.\n"
-            " 3. Rank results by salary DESC, then recency.\n"
-            "OUTPUT (JSON List):\n"
-            "[{title, company, salary_usd, url, why_match}]  • Max 10 items."
-        ),
+            "Use `search_linkup_tool` to fetch jobs that match"
+            "the candidate profile you receive. Stop when you have information about "
+            "matching jobs."
+            "Make sure to look for specific job titles, company names, and job URLs."
+            "OUTPUT: A list of no less than 5 and no more than 10 jobs, with job titles, company names, and job URLs."),
         model=_MODEL,
-        tools=[search_linkup_tool],
+        tools=[search_linkup_tool]
     )
 
 
@@ -75,15 +64,11 @@ def build_search_agent() -> ChatAgent:
 def build_research_agent() -> ChatAgent:
     return ChatAgent(
         system_message=(
-            "ROLE: Resource Researcher.\n"
-            "INPUT: recruiter JSON list.\n"
-            "For EACH job:\n"
-            " • Run up to 3 `web_search_tool` queries "
-            "(company interview tips, role-specific questions, system design).\n"
-            " • Choose top 3 relevant links.\n"
-            "OUTPUT (JSON dict):\n"
-            "{job_url: [{title, url, note}] }"
-        ),
+            "Use `web_search_tool` to fetch information "
+            "about interview resources necessary for preparation for interviews in jobs received. "
+            "Stop when you have a at least 5 resources."
+            "OUTPUT: A list of no less than 5 and no more than 10 resources, "
+            "with resource titles, descriptions, and URLs."),
         model=_MODEL,
         tools=[web_search_tool],
     )

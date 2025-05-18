@@ -3,31 +3,34 @@
 from __future__ import annotations
 
 from linkup import LinkupClient
-from typing import Any, Dict
 from camel.toolkits import FunctionTool, SearchToolkit
 from .config import LINKUP_API_KEY
 
 client = LinkupClient(api_key=LINKUP_API_KEY)
 
+_LINKUP_SCHEMA = {
+    "type": "function",
+    "function": {
+        "name": "search_linkup",
+        "description": "Look through web for query-relevant information.",
+        "strict": True,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query":  {"type": "string", "description": "Boolean search string"},
+            },
+            "required": ["query"],
+            "additionalProperties": False
+        }
+    }
+}
 
-def search_linkup(
-    query: str
-) -> Dict[str, Any]:
-    """Search the web for job postings with Linkup.
 
-    Args:
-        query: The query
-
-    Returns:
-        Parsed JSON response from LinkUp.
-    """
-
+def _linkup(*, query: str):
     return client.search(
-        query=query,
-        depth="standard",
-        output_type="sourcedAnswer"
-    )
+        query=query, depth="standard", output_type="sourcedAnswer",
+    ).model_dump()
 
 
-search_linkup_tool = FunctionTool(search_linkup)
-web_search_tool = FunctionTool(SearchToolkit().search_duckduckgo)
+search_linkup_tool = FunctionTool(_linkup, openai_tool_schema=_LINKUP_SCHEMA)
+web_search_tool = FunctionTool(SearchToolkit().search_brave)
