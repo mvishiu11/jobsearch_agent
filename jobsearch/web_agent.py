@@ -1,49 +1,52 @@
-from camel.agents import EmbodiedAgent
-from flask import Flask, render_template_string
-import markdown
-from threading import Thread
-import textwrap
-
-_HTML_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Job-Search Summary</title>
-    <link href="https://cdn.simplecss.org/simple.min.css" rel="stylesheet">
-</head>
-<body>
-  <header><h1>Job-Search & Interview Plan</h1></header>
-
-  <section id="result">
-    {{ result|safe }}
-  </section>
-</body>
-</html>
 """
+Embodied agent that converts a Markdown summary into HTML,
+writes a Flask `app.py`, then runs it on http://127.0.0.1:5000.
+"""
+
+from __future__ import annotations
+from camel.agents import EmbodiedAgent
+from camel.messages import BaseMessage
+from camel.types import RoleType
+from camel.generators import SystemMessageGenerator
+
+_SYSTEM_MSG = SystemMessageGenerator().from_dict(
+    meta_dict=dict(role="Front-End Presenter",
+                   task="Write Flask code that renders Markdown → HTML and run it"),
+    role_tuple=("Front-End Presenter", RoleType.EMBODIMENT),
+)
+
+# ---------------------------------------------------------------------------
 
 
 class WebPresenterAgent(EmbodiedAgent):
-    role = "Front-End Presenter"
-    task = "Serve summary via Flask"
+    """Embodied agent that spins up the Flask server by itself."""
 
-    def __init__(self, summary_data: dict, model=None):
-        super().__init__(system_message="Render HTML", model=model)
-        self.data = summary_data
-        self.app = Flask(__name__)
-        self._register_routes()
+    def __init__(self, markdown_doc: str, model=None):
+        super().__init__(
+            system_message=_SYSTEM_MSG,
+            model=model,
+            code_interpreter=None,
+            tool_agents=None,
+        )
+        self.markdown_doc = markdown_doc
 
-    def _register_routes(self):
-        @self.app.route("/")
-        def index():
-            """
-            Render the Job-Search & Interview Plan summary.
-            """
-            result = markdown.markdown(self.data, extensions=["tables"])
-            return render_template_string(
-                _HTML_TEMPLATE,
-                result=textwrap.indent(result, "  "),
-            )
-
-    def run(self):
-        Thread(target=self.app.run, kwargs={"debug": False}).start()
+    def get_init_message(self) -> BaseMessage:
+        content = (
+            "Here is the full Markdown to serve as a web-page:\n"
+            "```markdown\n"
+            f"{self.markdown_doc}\n"
+            "```\n\n"
+            "Write *exactly one* Python script called **app.py** that:\n"
+            "1. `import markdown, textwrap, flask`.\n"
+            "2. Converts the Markdown string above to HTML with "
+            "`markdown.markdown(..., extensions=['tables'])`.\n"
+            "3. Uses simple, well-known stylesheet.\n"
+            "4. Uses Flask + Jinja2 (`|safe`) to serve that HTML at route `/`.\n"
+            "5. Starts the server on `127.0.0.1`, port 5000 **in a background "
+            "thread** so the code returns immediately.\n"
+            "6. After starting, `print('🌐 http://127.0.0.1:5000')`.\n"
+            "Respond **only** with the Python code block that writes and runs "
+            "the server, then print `###RUN_COMPLETE###` on a new line. "
+            "NO explanations, no markdown fencing around RUN_COMPLETE."
+        )
+        return BaseMessage.make_user_message(role_name="user", content=content)

@@ -4,7 +4,7 @@ from rich.console import Console
 from .workflow import run_workflow
 
 
-def main() -> None:  # pragma: no cover
+def main() -> None:
     console = Console()
     console.print("[bold green]🚀 Jobsearch CAMEL Workforce starting up…")
     run_workflow()

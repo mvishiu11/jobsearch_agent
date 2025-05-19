@@ -55,7 +55,11 @@ def build_search_agent() -> ChatAgent:
             "matching jobs. Make sure to focus on ALL the criteria received from the candidate, "
             "Not just a single one, like salary. Take into account position level, location, tech stack, and salary."
             "Make sure to look for specific job titles, company names, and job URLs."
-            "OUTPUT: A list of no less than 3 and no more than 5 jobs, with job titles, company names, and job URLs."),
+            "Make sure to keep the search reasonably short, do not take too long to search."
+            "If some jobs do not have one of the criteria, ignore it."
+            "If some jobs do not match the criteria, ignore it."
+            "OUTPUT: A list of no less than 3 and no more than 5 jobs, with job titles, company names, and job URLs, "
+            "sorted in DESCENDING order, based on the salary range."),
         model=_MODEL,
         tools=[search_linkup_tool]
     )
@@ -68,6 +72,7 @@ def build_research_agent() -> ChatAgent:
             "Use `web_search_tool` to fetch information "
             "about interview resources necessary for preparation for interviews in jobs received. "
             "Stop when you have a at least 3 resources."
+            "Make sure to keep the search reasonably short, do not take too long to search."
             "OUTPUT: A list of no less than 3 and no more than 5 resources, "
             "with resource titles, descriptions, and URLs."),
         model=_MODEL,
@@ -88,7 +93,7 @@ def build_planner_agent() -> ChatAgent:
             " - Mix coding drills (LeetCode style), system-design sessions, "
             "   behavioral prep, and company research.\n"
             " - Reference specific resources by title.\n"
-            "OUTPUT:\n"
+            "OUTPUT: should be a properly formatted markdown table:\n"
             "```markdown\n"
             "# Day 1-14 Schedule\n"
             "| Day | Focus | Resource |\n"

@@ -13,7 +13,7 @@ from .agents import (
     build_planner_agent,
 )
 from .web_agent import WebPresenterAgent
-
+import time
 from .agents import _MODEL
 
 console = Console()
@@ -41,16 +41,29 @@ def run_workflow() -> None:
                    search for jobs matching the candidate's criteria using Linkup browser via 'search_linkup' tool,
                    look for resources necessary for preparation for interviews in jobs received using Brave
                    browser via 'web_search_tool' tool,
-                   and craft a 14-day interview plan by pure reasoning in 'Interview planner' agent.""",
+                   and craft a 14-day interview plan by pure reasoning in 'Interview planner' agent.
+                   Present all results in properly formatted markdown document, which properly summarizes
+                   the information gathered by the agents and links them together. Make sure to write the
+                   jobs as ranked list, sorted by salary range, DESCENDING.""",
         id="0",
     )
 
     result_task = workforce.process_task(initial_task)
 
-    print(result_task)
-
     console.rule("[bold green]Interview Plan")
     console.print(result_task.result)
 
-    web_agent = WebPresenterAgent(summary_data=result_task.result, model=_MODEL)
-    web_agent.run()
+    presenter = WebPresenterAgent(markdown_doc=result_task.result, model=_MODEL)
+    presenter.step(presenter.get_init_message())
+
+    console.print(
+        "[bold cyan]\n🌐  WebPresenterAgent is serving at http://127.0.0.1:5000\n"
+        "Press Ctrl-C to quit."
+    )
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        console.print("\n[bold red]Shutting down...\n")
+        console.print("[bold green]✅ Workflow finished. Goodbye!\n")
