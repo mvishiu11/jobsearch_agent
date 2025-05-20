@@ -12,12 +12,12 @@ from .tools import search_linkup_tool
 from .tools import web_search_tool
 from .human import human_tool
 
-# ---------------------------------------------------------------------------
-# Low‑level model factory (shared by all agents)
-# ---------------------------------------------------------------------------
-
 
 def _create_model():
+    """
+    Create a model instance based on the configuration.
+    This is a low-level factory function that is shared by all agents.
+    """
     return ModelFactory.create(
         model_platform=getattr(ModelPlatformType, settings.model_platform.upper()),
         model_type=getattr(ModelType, settings.model_type.upper()),
@@ -29,13 +29,10 @@ def _create_model():
 _MODEL = _create_model()
 
 
-# ---------------------------------------------------------------------------
-# Agent builders
-# ---------------------------------------------------------------------------
-
-
-# ----------  Mentor  ----------
 def build_preference_agent() -> ChatAgent:
+    """
+    Build a preference-gathering agent.
+    """
     return ChatAgent(
         system_message=(
             """Gather candidate preferences from the candidate
@@ -46,8 +43,10 @@ def build_preference_agent() -> ChatAgent:
     )
 
 
-# ----------  Recruiter  ----------
 def build_search_agent() -> ChatAgent:
+    """
+    Build a job-searching agent.
+    """
     return ChatAgent(
         system_message=(
             "Use `search_linkup_tool` to fetch jobs that match"
@@ -65,8 +64,10 @@ def build_search_agent() -> ChatAgent:
     )
 
 
-# ----------  Researcher  ----------
 def build_research_agent() -> ChatAgent:
+    """
+    Build a research agent.
+    """
     return ChatAgent(
         system_message=(
             "Use `web_search_tool` to fetch information "
@@ -80,8 +81,10 @@ def build_research_agent() -> ChatAgent:
     )
 
 
-# ----------  Coach  ----------
 def build_planner_agent() -> ChatAgent:
+    """
+    Build a planner agent.
+    """
     return ChatAgent(
         system_message=(
             "ROLE: Senior Interview Coach.\n"

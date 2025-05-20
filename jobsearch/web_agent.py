@@ -15,11 +15,16 @@ _SYSTEM_MSG = SystemMessageGenerator().from_dict(
     role_tuple=("Front-End Presenter", RoleType.EMBODIMENT),
 )
 
-# ---------------------------------------------------------------------------
-
 
 class WebPresenterAgent(EmbodiedAgent):
-    """Embodied agent that spins up the Flask server by itself."""
+    """
+    Embodied agent that spins up the Flask server and serves the Markdown.
+    Also writes the Flask and HTML files.
+
+    Args:
+        markdown_doc (str): Markdown content to serve.
+        model (Model, optional): Model to use for the agent.
+    """
 
     def __init__(self, markdown_doc: str, model=None):
         super().__init__(
@@ -31,6 +36,12 @@ class WebPresenterAgent(EmbodiedAgent):
         self.markdown_doc = markdown_doc
 
     def get_init_message(self) -> BaseMessage:
+        """
+        Encapsulates the initial message for the agent.
+
+        Returns:
+            BaseMessage: Initial message for the agent.
+        """
         content = (
             "Here is the full Markdown to serve as a web-page:\n"
             "```markdown\n"

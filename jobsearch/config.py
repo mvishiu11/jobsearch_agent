@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
+# Assume the .env file is in the project root
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env", override=False)
 
 
@@ -14,7 +15,7 @@ class Settings(BaseSettings):
 
     openai_api_key: str  # required
     linkup_api_key: str  # required
-    brave_api_key: str  # required
+    brave_api_key: str   # required
 
     model_platform: str = Field("openai", env="MODEL_PLATFORM")
     model_type: str = Field("gpt_4o_mini", env="MODEL_TYPE")
